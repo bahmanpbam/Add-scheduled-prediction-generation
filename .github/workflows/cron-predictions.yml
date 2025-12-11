@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 8:00 AM UTC every Monday, Wednesday, and Friday
     - cron: '0 8 * * 1,3,5'
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
   generate-predictions:
@@ -13,9 +13,19 @@ jobs:
     steps:
       - name: Call Supabase Function
         run: |
-          curl -X POST https://iulictgvgodsmblhjgdy.supabase.co/functions/v1/generate_predictions_cron \
-            -H "Content-Type: application/json" \
-            --fail-with-body
-            
-            
-            
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            https://iulictgvgodsmblhjgdy.supabase.co/functions/v1/generate_predictions_cron \
+            -H "Content-Type: application/json")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Function call failed"
+            exit 1
+          fi
+          
+          echo "✅ Predictions generated successfully"
