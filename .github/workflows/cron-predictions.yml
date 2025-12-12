@@ -1,16 +1,17 @@
 name: Generate Predictions Cron
-
 on:
-  workflow_dispatch:      # allow manual runs
+  workflow_dispatch:
   schedule:
-    - cron: "0 8 * * 1,3,5"   # Mon, Wed, Fri at 08:00 UTC
-
+    - cron: "0 8 * * 1,3,5"
 jobs:
   run-prediction-cron:
     runs-on: ubuntu-latest
-
     steps:
       - name: Call Supabase Function
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           curl -X POST \
-            "https://iulictgvgodsmblhjgdy.functions.supabase.co/generate_predictions_cron"
+            "https://iulictgvgodsmblhjgdy.supabase.co/functions/v1/generate_predictions_cron" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json"
